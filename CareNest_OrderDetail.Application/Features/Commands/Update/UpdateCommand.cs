@@ -1,39 +1,26 @@
 ﻿using CareNest_OrderDetail.Application.Interfaces.CQRS.Commands;
-using CareNest_OrderDetail.Domain.Commons.Enum;
 using CareNest_OrderDetail.Domain.Entitites;
 
 namespace CareNest_OrderDetail.Application.Features.Commands.Update
 {
-    public class UpdateCommand : ICommand<Order>
+    public class UpdateCommand : ICommand<OrderDetail>
     {
         public string Id { get; set; } = string.Empty;
         /// <summary>
-        /// Id khách hàng order
+        /// Id chi tiết sản phẩm 
         /// </summary>
-        public string? CustomerId { get; set; }
+        public string? ProductDetailId { get; set; }
         /// <summary>
-        /// Id cửa hàng bán
+        /// Id đơn hàng
         /// </summary>
-        public string? ShopId { get; set; }
+        public string? OrderId { get; set; }
         /// <summary>
-        /// Id địa chỉ giao hàng cuỷa khách hàng
+        /// số lượng thú cưng
         /// </summary>
-        public string? ShipAddressId { get; set; }
+        public int Quantity { get; set; }
         /// <summary>
         /// tổng tiền đơn hàng
         /// </summary>
         public double TotalAmount { get; set; }
-        /// <summary>
-        /// phương thức thanh toán
-        /// </summary>
-        public string? PaymentMethod { get; set; }
-        /// <summary>
-        /// ghi chú
-        /// </summary>
-        public string? Note { get; set; }
-        /// <summary>
-        /// trạng thái: Pending / Confirmed / Checkin / Processing / Finished / Cancel
-        /// </summary>
-        public OrderStatus? Status { get; set; }
     }
 }

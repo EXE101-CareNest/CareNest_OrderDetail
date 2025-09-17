@@ -1,11 +1,11 @@
-﻿using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
+﻿using CareNest_OrderDetail.Application.Common;
+using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
 using CareNest_OrderDetail.Application.Interfaces.UOW;
 using CareNest_OrderDetail.Domain.Entitites;
-using CareNest_OrderDetail.Application.Common;
 
 namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
 {
-    public class GetAllPagingQueryHandler : IQueryHandler<GetAllPagingQuery, PageResult<OrderResponse>>
+    public class GetAllPagingQueryHandler : IQueryHandler<GetAllPagingQuery, PageResult<OrderDetailResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -14,24 +14,24 @@ namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<PageResult<OrderResponse>> HandleAsync(GetAllPagingQuery query)
+        public async Task<PageResult<OrderDetailResponse>> HandleAsync(GetAllPagingQuery query)
         {
-            var selector = ObjectMapperExtensions.CreateMapExpression<Order, OrderResponse>();
+            var selector = ObjectMapperExtensions.CreateMapExpression<OrderDetail, OrderDetailResponse>();
 
             var orderByFunc = GetOrderByFunc(query.SortColumn, query.SortDirection);
 
-            IEnumerable<OrderResponse> a = await _unitOfWork.GetRepository<Order>().FindAsync(
+            IEnumerable<OrderDetailResponse> a = await _unitOfWork.GetRepository<OrderDetail>().FindAsync(
                 predicate: null,
                 orderBy: orderByFunc,
                 selector: selector,
                 pageSize: query.PageSize,
                 pageIndex: query.Index);
 
-            return new PageResult<OrderResponse>(a, 1, query.PageSize, query.Index);
+            return new PageResult<OrderDetailResponse>(a, 1, query.PageSize, query.Index);
         }
 
 
-        private Func<IQueryable<Order>, IOrderedQueryable<Order>> GetOrderByFunc(string? sortColumn, string? sortDirection)
+        private Func<IQueryable<OrderDetail>, IOrderedQueryable<OrderDetail>> GetOrderByFunc(string? sortColumn, string? sortDirection)
         {
             var ascending = string.IsNullOrWhiteSpace(sortDirection) || sortDirection.ToLower() != "desc";
 

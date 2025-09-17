@@ -1,10 +1,11 @@
-﻿using CareNest_OrderDetail.Application.Interfaces.CQRS.Commands;
-using CareNest_OrderDetail.Domain.Entitites;
-
-namespace CareNest_OrderDetail.Application.Features.Commands.Create
+﻿namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
 {
-    public class CreateCommand : ICommand<OrderDetail>
+    public class OrderDetailResponse
     {
+        /// <summary>
+        /// Id đơn hàng
+        /// </summary>
+        public string? Id { get; set; }
         /// <summary>
         /// Id chi tiết sản phẩm 
         /// </summary>

@@ -14,9 +14,9 @@ namespace CareNest_OrderDetail.Application.Features.Queries.GetById
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Order> HandleAsync(GetByIdQuery query)
+        public async Task<OrderDetail> HandleAsync(GetByIdQuery query)
         {
-            Order? service = await _unitOfWork.GetRepository<Order>().GetByIdAsync(query.Id);
+            OrderDetail? service = await _unitOfWork.GetRepository<OrderDetail>().GetByIdAsync(query.Id);
 
             if (service == null)
             {

@@ -1,9 +1,9 @@
-﻿using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
-using CareNest_OrderDetail.Application.Common;
+﻿using CareNest_OrderDetail.Application.Common;
+using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
 
 namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
 {
-    public class GetAllPagingQuery : IQuery<PageResult<OrderResponse>>
+    public class GetAllPagingQuery : IQuery<PageResult<OrderDetailResponse>>
     {
         public int Index { get; set; }
         public int PageSize { get; set; }

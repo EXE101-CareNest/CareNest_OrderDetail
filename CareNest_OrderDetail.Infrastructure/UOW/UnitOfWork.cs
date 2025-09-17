@@ -1,8 +1,8 @@
-﻿using CareNest_OrderDetail.Infrastructure.Persistences.Repository;
-using CareNest_OrderDetail.Application.Interfaces.UOW;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using CareNest_OrderDetail.Application.Interfaces.UOW;
 using CareNest_OrderDetail.Domain.Repositories;
 using CareNest_OrderDetail.Infrastructure.Persistences.Database;
+using CareNest_OrderDetail.Infrastructure.Persistences.Repository;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CareNest_OrderDetail.Infrastructure.UOW
 {

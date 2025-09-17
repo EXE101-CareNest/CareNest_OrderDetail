@@ -1,5 +1,5 @@
-﻿using CareNest_Order.Application.Interfaces.CQRS.Commands;
-using CareNest_Order.Application.Interfaces.CQRS.Queries;
+﻿using CareNest_OrderDetail.Application.Interfaces.CQRS.Commands;
+using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
 
 namespace CareNest_OrderDetail.Application.Interfaces.CQRS
 {

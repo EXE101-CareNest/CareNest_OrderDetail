@@ -16,27 +16,25 @@ namespace CareNest_OrderDetail.Application.Features.Commands.Update
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Order> HandleAsync(UpdateCommand command)
+        public async Task<OrderDetail> HandleAsync(UpdateCommand command)
         {
             // Gọi validator để kiểm tra dữ liệu
             //Validate.ValidateUpdate(command);
 
             // Tìm để cập nhật
-            Order? service = await _unitOfWork.GetRepository<Order>().GetByIdAsync(command.Id)
+            OrderDetail? orderDetail = await _unitOfWork.GetRepository<OrderDetail>().GetByIdAsync(command.Id)
                ?? throw new BadRequestException("Id: " + MessageConstant.NotFound);
 
-            service.Note = command.Note;
-            service.Status = command.Status;
-            service.CustomerId = command.CustomerId;
-            service.PaymentMethod = command.PaymentMethod;
-            service.ShipAddressId = command.ShipAddressId;
-            service.TotalAmount = command.TotalAmount;
-            service.Status = command.Status;
-            service.UpdatedAt = TimeHelper.GetUtcNow();
 
-            _unitOfWork.GetRepository<Order>().Update(service);
+            orderDetail.TotalAmount = command.TotalAmount;
+            orderDetail.Quantity = command.Quantity;
+            orderDetail.OrderId = command.OrderId;
+            orderDetail.ProductDetailId = command.ProductDetailId;
+            orderDetail.UpdatedAt = TimeHelper.GetUtcNow();
+
+            _unitOfWork.GetRepository<OrderDetail>().Update(orderDetail);
             await _unitOfWork.SaveAsync();
-            return service;
+            return orderDetail;
 
         }
     }

@@ -1,6 +1,6 @@
-﻿using CareNest_Order.Application.Interfaces.CQRS.Commands;
-using CareNest_Order.Application.Interfaces.UOW;
-using CareNest_OrderDetail.Application.Features.Commands.Create;
+﻿using CareNest_OrderDetail.Application.Exceptions.Validators;
+using CareNest_OrderDetail.Application.Interfaces.CQRS.Commands;
+using CareNest_OrderDetail.Application.Interfaces.UOW;
 using CareNest_OrderDetail.Domain.Entitites;
 using Shared.Helper;
 
@@ -15,25 +15,25 @@ namespace CareNest_OrderDetail.Application.Features.Commands.Create
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Order> HandleAsync(CreateCommand command)
+        public async Task<OrderDetail> HandleAsync(CreateCommand command)
         {
-            //Validate.ValidateCreate(command);
+            Validate.ValidateCreate(command);
 
-            Order service = new()
+            // tính tổng giá của 1 sản phẩm * số lượng  
+
+
+            OrderDetail orderDetail = new()
             {
-                Status = command.Status,
-                CustomerId = command.CustomerId,
-                Note = command.Note,
-                PaymentMethod = command.PaymentMethod,
-                ShipAddressId = command.ShipAddressId,
+                Quantity = command.Quantity,
+                ProductDetailId = command.ProductDetailId,
+                OrderId = command.OrderId,
                 TotalAmount = command.TotalAmount,
-                ShopId = command.ShopId,
                 CreatedAt = TimeHelper.GetUtcNow()
             };
-            await _unitOfWork.GetRepository<Order>().AddAsync(service);
+            await _unitOfWork.GetRepository<OrderDetail>().AddAsync(orderDetail);
             await _unitOfWork.SaveAsync();
 
-            return service;
+            return orderDetail;
         }
     }
 }

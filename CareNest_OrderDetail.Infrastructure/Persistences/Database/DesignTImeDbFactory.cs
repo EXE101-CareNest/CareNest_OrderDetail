@@ -9,7 +9,7 @@ namespace CareNest_OrderDetail.Infrastructure.Persistences.Database
     {
         public DatabaseContext CreateDbContext(string[] args)
         {
-            var apiProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "CareNest_Order.API");
+            var apiProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "CareNest_OrderDetail.API");
             apiProjectPath = Path.GetFullPath(apiProjectPath);
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
