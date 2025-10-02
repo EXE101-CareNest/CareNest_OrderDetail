@@ -1,0 +1,19 @@
+services:
+  carenest-order-detail-api:
+    image: carenest-order-detail-api--dev:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8022:8080"
+    container_name: carenest-order-detail-api-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      carenest-network:
+        ipv4_address: 192.168.0.25
+
+networks:
+  carenest-network:
+    external: true
