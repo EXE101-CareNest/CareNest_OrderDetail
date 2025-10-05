@@ -14,6 +14,8 @@ namespace CareNest_OrderDetail.Infrastructure.Persistences.Database
         {
             base.OnModelCreating(modelBuilder);
 
+            // Map bảng về chữ thường để khớp tên thật trong Postgres
+            modelBuilder.Entity<OrderDetail>().ToTable("orderdetails");
         }
     }
 }

@@ -59,7 +59,7 @@ namespace CareNest_OrderDetail.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("orderdetails", (string)null);
                 });
 #pragma warning restore 612, 618
         }
