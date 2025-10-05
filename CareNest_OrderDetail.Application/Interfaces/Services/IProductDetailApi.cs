@@ -2,12 +2,7 @@ using System.Threading.Tasks;
 
 namespace CareNest_OrderDetail.Application.Interfaces.Services
 {
-    public interface IProductDetailApi
-    {
-        Task<ProductDetailDto?> GetByIdAsync(string productDetailId, CancellationToken cancellationToken = default);
-        Task<bool> UpdateAsync(string productDetailId, ProductDetailUpdateDto request, CancellationToken cancellationToken = default);
-    }
-
+    // Giữ các DTO để tái sử dụng với client generic
     public class ProductDetailDto
     {
         public string? Id { get; set; }
@@ -20,7 +15,7 @@ namespace CareNest_OrderDetail.Application.Interfaces.Services
         public string? ImgUrls { get; set; }
         public int QuantityInStock { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
     }

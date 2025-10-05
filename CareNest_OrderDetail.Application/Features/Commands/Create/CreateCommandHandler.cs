@@ -10,12 +10,12 @@ namespace CareNest_OrderDetail.Application.Features.Commands.Create
     public class CreateCommandHandler : ICommandHandler<CreateCommand, OrderDetail>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IProductDetailApi _productDetailApi;
+        private readonly IAPIService _apiService;
 
-        public CreateCommandHandler(IUnitOfWork unitOfWork, IProductDetailApi productDetailApi)
+        public CreateCommandHandler(IUnitOfWork unitOfWork, IAPIService apiService)
         {
             _unitOfWork = unitOfWork;
-            _productDetailApi = productDetailApi;
+            _apiService = apiService;
         }
 
         public async Task<OrderDetail> HandleAsync(CreateCommand command)
@@ -23,11 +23,12 @@ namespace CareNest_OrderDetail.Application.Features.Commands.Create
             Validate.ValidateCreate(command);
 
             // Lấy thông tin ProductDetail để tính giá và tồn kho
-            var product = await _productDetailApi.GetByIdAsync(command.ProductDetailId!);
-            if (product == null)
+            var productRes = await _apiService.GetAsync<ProductDetailDto>("product", $"/api/ProductDetails/{command.ProductDetailId}");
+            if (!productRes.IsSuccess || productRes.Data == null)
             {
-                throw new ArgumentException($"Không tìm thấy chi tiết sản phẩm với ID: {command.ProductDetailId}");
+                throw new ArgumentException(productRes.Message ?? $"Không tìm thấy chi tiết sản phẩm với ID: {command.ProductDetailId}");
             }
+            var product = productRes.Data;
 
             int newQuantityInStock = product.QuantityInStock - command.Quantity;
             if (newQuantityInStock < 0)
@@ -47,10 +48,10 @@ namespace CareNest_OrderDetail.Application.Features.Commands.Create
                 QuantityInStock = newQuantityInStock
             };
 
-            var updated = await _productDetailApi.UpdateAsync(command.ProductDetailId!, updateRequest);
-            if (!updated)
+            var updateRes = await _apiService.PutAsync<object>("product", $"/api/ProductDetails/{command.ProductDetailId}", updateRequest);
+            if (!updateRes.IsSuccess)
             {
-                throw new ArgumentException("Không thể cập nhật tồn kho cho sản phẩm");
+                throw new ArgumentException(updateRes.Message ?? "Không thể cập nhật tồn kho cho sản phẩm");
             }
 
             double lineTotal = product.Price * command.Quantity;

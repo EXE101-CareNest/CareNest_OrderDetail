@@ -9,6 +9,7 @@ using CareNest_OrderDetail.Application.Interfaces.CQRS;
 using CareNest_OrderDetail.Application.Interfaces.CQRS.Commands;
 using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
 using CareNest_OrderDetail.Application.Interfaces.Services;
+using CareNest_OrderDetail.Application.Common.Options;
 using CareNest_OrderDetail.Application.Interfaces.UOW;
 using CareNest_OrderDetail.Application.UseCases;
 using CareNest_OrderDetail.Domain.Entitites;
@@ -209,14 +210,15 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddScoped<IUseCaseDispatcher, UseCaseDispatcher>();
 
-// HttpClient cho ProductDetail API
-builder.Services.AddHttpClient<IProductDetailApi, ProductDetailApi>((sp, client) =>
+// Options cho APIService generic
+builder.Services.Configure<APIServiceOption>(options =>
 {
-    var config = sp.GetRequiredService<IConfiguration>();
-    var baseUrl = config["ProductDetailApi:BaseUrl"] ?? "http://localhost:8016";
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(10);
+    var config = builder.Configuration;
+    options.BaseUrlProduct = config["ProductDetailApi:BaseUrl"] ?? "http://localhost:8016";
 });
+
+// HttpClient generic
+builder.Services.AddHttpClient<IAPIService, APIService>();
 
 
 
