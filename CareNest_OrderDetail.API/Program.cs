@@ -21,6 +21,7 @@ using CareNest_OrderDetail.Infrastructure.UOW;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -207,6 +208,15 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 //});
 
 builder.Services.AddScoped<IUseCaseDispatcher, UseCaseDispatcher>();
+
+// HttpClient cho ProductDetail API
+builder.Services.AddHttpClient<IProductDetailApi, ProductDetailApi>((sp, client) =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var baseUrl = config["ProductDetailApi:BaseUrl"] ?? "http://localhost:8016";
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 
 
 
