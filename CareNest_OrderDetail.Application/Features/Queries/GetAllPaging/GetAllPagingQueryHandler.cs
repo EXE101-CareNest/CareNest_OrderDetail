@@ -20,14 +20,30 @@ namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
 
             var orderByFunc = GetOrderByFunc(query.SortColumn, query.SortDirection);
 
-            IEnumerable<OrderDetailResponse> a = await _unitOfWork.GetRepository<OrderDetail>().FindAsync(
-                predicate: null,
+            // Build predicate for filtering by OrderId if provided
+            System.Linq.Expressions.Expression<Func<OrderDetail, bool>>? predicate = null;
+            if (!string.IsNullOrWhiteSpace(query.OrderId))
+            {
+                predicate = od => od.OrderId == query.OrderId;
+            }
+
+            // Get total count with the same predicate (without paging)
+            var repo = _unitOfWork.GetRepository<OrderDetail>();
+            var baseQuery = repo.Entities.AsQueryable();
+            if (predicate != null)
+            {
+                baseQuery = baseQuery.Where(predicate);
+            }
+            int totalItems = baseQuery.Count();
+
+            IEnumerable<OrderDetailResponse> items = await repo.FindAsync(
+                predicate: predicate,
                 orderBy: orderByFunc,
                 selector: selector,
                 pageSize: query.PageSize,
                 pageIndex: query.Index);
 
-            return new PageResult<OrderDetailResponse>(a, 1, query.PageSize, query.Index);
+            return new PageResult<OrderDetailResponse>(items, totalItems, query.Index, query.PageSize);
         }
 
 

@@ -33,6 +33,7 @@ namespace CareNest_OrderDetail.API.Controllers
         public async Task<IActionResult> GetPaging(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
+            [FromQuery] string? orderId = null,
             [FromQuery] string? sortColumn = null,
             [FromQuery] string? sortDirection = "asc")
         {
@@ -40,6 +41,7 @@ namespace CareNest_OrderDetail.API.Controllers
             {
                 Index = pageIndex,
                 PageSize = pageSize,
+                OrderId = orderId,
                 SortColumn = sortColumn,
                 SortDirection = sortDirection
             };
@@ -106,6 +108,81 @@ namespace CareNest_OrderDetail.API.Controllers
         {
             await _dispatcher.DispatchAsync(new DeleteCommand { Id = id });
             return this.OkResponse(MessageConstant.SuccessDelete);
+        }
+
+        /// <summary>
+        /// Dashboard tổng hợp cho Shop và Category theo shopId (tùy chọn)
+        /// </summary>
+        /// <param name="shopId">Id của shop (tùy chọn). Nếu không có sẽ trả danh sách shop</param>
+        /// <param name="pageIndex">trang hiện tại</param>
+        /// <param name="pageSize">Số lượng phần tử trong trang</param>
+        /// <param name="sortDirection">cách sort asc or desc</param>
+        /// <returns></returns>
+        [HttpGet("dashboard")]
+        public async Task<IActionResult> Dashboard(
+            [FromServices] CareNest_OrderDetail.Application.Interfaces.Services.IAPIService api,
+            [FromQuery] string? shopId,
+            [FromQuery] int pageIndex = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sortDirection = "asc")
+        {
+            if (string.IsNullOrWhiteSpace(shopId))
+            {
+                var endpoint = $"/api/Shop?pageIndex={pageIndex}&pageSize={pageSize}&sortDirection={sortDirection}";
+                var result = await api.GetAsync<CareNest_OrderDetail.Application.Common.PageResult<CareNest_OrderDetail.Application.DTOs.ShopItemDto>>("shop", endpoint);
+                if (!result.IsSuccess)
+                {
+                    return this.ErrorResponse<object>(result.Message ?? "Không thể lấy dữ liệu shop");
+                }
+
+                var data = result.Data!;
+                var response = new CareNest_OrderDetail.Application.DTOs.DashboardResponseDto
+                {
+                    ShopId = null,
+                    Shop = null,
+                    Data = data.Items,
+                    TotalCount = data.TotalItems,
+                    PageIndex = data.PageNumber,
+                    PageSize = data.PageSize
+                };
+                return this.OkResponse(response, MessageConstant.SuccessGet);
+            }
+            else
+            {
+                var categoriesEndpoint = $"/api/ProductCategories?pageIndex={pageIndex}&pageSize={pageSize}&sortDirection={sortDirection}&shopId={shopId}";
+                var catResult = await api.GetAsync<CareNest_OrderDetail.Application.Common.PageResult<CareNest_OrderDetail.Application.DTOs.ProductCategoryItemDto>>("product", categoriesEndpoint);
+                if (!catResult.IsSuccess)
+                {
+                    return this.ErrorResponse<object>(catResult.Message ?? "Không thể lấy dữ liệu category");
+                }
+
+                var shopEndpoint = $"/api/Shop/{shopId}";
+                var shopResult = await api.GetAsync<CareNest_OrderDetail.Application.DTOs.ShopItemDto>("shop", shopEndpoint);
+
+                CareNest_OrderDetail.Application.DTOs.ShopSummaryDto? shopSummary = null;
+                if (shopResult.IsSuccess && shopResult.Data != null)
+                {
+                    shopSummary = new CareNest_OrderDetail.Application.DTOs.ShopSummaryDto
+                    {
+                        Id = shopResult.Data.Id,
+                        Name = shopResult.Data.Name,
+                        Status = shopResult.Data.Status,
+                        ImgUrl = shopResult.Data.ImgUrl
+                    };
+                }
+
+                var catData = catResult.Data!;
+                var response = new CareNest_OrderDetail.Application.DTOs.DashboardResponseDto
+                {
+                    ShopId = shopId,
+                    Shop = shopSummary,
+                    Data = catData.Items,
+                    TotalCount = catData.TotalItems,
+                    PageIndex = catData.PageNumber,
+                    PageSize = catData.PageSize
+                };
+                return this.OkResponse(response, MessageConstant.SuccessGet);
+            }
         }
     }
 }

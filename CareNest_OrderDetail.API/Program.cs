@@ -9,6 +9,7 @@ using CareNest_OrderDetail.Application.Interfaces.CQRS;
 using CareNest_OrderDetail.Application.Interfaces.CQRS.Commands;
 using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
 using CareNest_OrderDetail.Application.Interfaces.Services;
+using CareNest_OrderDetail.Application.Common.Options;
 using CareNest_OrderDetail.Application.Interfaces.UOW;
 using CareNest_OrderDetail.Application.UseCases;
 using CareNest_OrderDetail.Domain.Entitites;
@@ -21,6 +22,7 @@ using CareNest_OrderDetail.Infrastructure.UOW;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -207,6 +209,17 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 //});
 
 builder.Services.AddScoped<IUseCaseDispatcher, UseCaseDispatcher>();
+
+// Options cho APIService generic
+builder.Services.Configure<APIServiceOption>(options =>
+{
+    var config = builder.Configuration;
+    options.BaseUrlShop = config["ShopApi:BaseUrl"] ?? "http://localhost:8015";
+    options.BaseUrlProduct = config["ProductDetailApi:BaseUrl"] ?? "http://localhost:8016";
+});
+
+// HttpClient generic
+builder.Services.AddHttpClient<IAPIService, APIService>();
 
 
 
