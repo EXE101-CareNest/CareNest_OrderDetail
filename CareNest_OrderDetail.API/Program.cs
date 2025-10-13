@@ -214,6 +214,7 @@ builder.Services.AddScoped<IUseCaseDispatcher, UseCaseDispatcher>();
 builder.Services.Configure<APIServiceOption>(options =>
 {
     var config = builder.Configuration;
+    options.BaseUrlShop = config["ShopApi:BaseUrl"] ?? "http://localhost:8015";
     options.BaseUrlProduct = config["ProductDetailApi:BaseUrl"] ?? "http://localhost:8016";
 });
 

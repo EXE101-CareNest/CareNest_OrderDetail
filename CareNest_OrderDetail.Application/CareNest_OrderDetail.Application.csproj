@@ -12,3 +12,4 @@
 	  <ProjectReference Include="..\CareNest_OrderDetail.Domain\CareNest_OrderDetail.Domain.csproj" />
 	</ItemGroup>
 </Project>
+ 
