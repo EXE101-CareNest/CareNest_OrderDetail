@@ -33,6 +33,7 @@ namespace CareNest_OrderDetail.API.Controllers
         public async Task<IActionResult> GetPaging(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
+            [FromQuery] string? orderId = null,
             [FromQuery] string? sortColumn = null,
             [FromQuery] string? sortDirection = "asc")
         {
@@ -40,6 +41,7 @@ namespace CareNest_OrderDetail.API.Controllers
             {
                 Index = pageIndex,
                 PageSize = pageSize,
+                OrderId = orderId,
                 SortColumn = sortColumn,
                 SortDirection = sortDirection
             };
@@ -127,7 +129,7 @@ namespace CareNest_OrderDetail.API.Controllers
             if (string.IsNullOrWhiteSpace(shopId))
             {
                 var endpoint = $"/api/Shop?pageIndex={pageIndex}&pageSize={pageSize}&sortDirection={sortDirection}";
-                var result = await api.GetAsync<CareNest_OrderDetail.Application.DTOs.PagedListDto<CareNest_OrderDetail.Application.DTOs.ShopItemDto>>("shop", endpoint);
+                var result = await api.GetAsync<CareNest_OrderDetail.Application.Common.PageResult<CareNest_OrderDetail.Application.DTOs.ShopItemDto>>("shop", endpoint);
                 if (!result.IsSuccess)
                 {
                     return this.ErrorResponse<object>(result.Message ?? "Không thể lấy dữ liệu shop");
@@ -139,8 +141,8 @@ namespace CareNest_OrderDetail.API.Controllers
                     ShopId = null,
                     Shop = null,
                     Data = data.Items,
-                    TotalCount = data.TotalCount,
-                    PageIndex = data.PageIndex,
+                    TotalCount = data.TotalItems,
+                    PageIndex = data.PageNumber,
                     PageSize = data.PageSize
                 };
                 return this.OkResponse(response, MessageConstant.SuccessGet);
@@ -148,7 +150,7 @@ namespace CareNest_OrderDetail.API.Controllers
             else
             {
                 var categoriesEndpoint = $"/api/ProductCategories?pageIndex={pageIndex}&pageSize={pageSize}&sortDirection={sortDirection}&shopId={shopId}";
-                var catResult = await api.GetAsync<CareNest_OrderDetail.Application.DTOs.PagedListDto<CareNest_OrderDetail.Application.DTOs.ProductCategoryItemDto>>("product", categoriesEndpoint);
+                var catResult = await api.GetAsync<CareNest_OrderDetail.Application.Common.PageResult<CareNest_OrderDetail.Application.DTOs.ProductCategoryItemDto>>("product", categoriesEndpoint);
                 if (!catResult.IsSuccess)
                 {
                     return this.ErrorResponse<object>(catResult.Message ?? "Không thể lấy dữ liệu category");
@@ -175,8 +177,8 @@ namespace CareNest_OrderDetail.API.Controllers
                     ShopId = shopId,
                     Shop = shopSummary,
                     Data = catData.Items,
-                    TotalCount = catData.TotalCount,
-                    PageIndex = catData.PageIndex,
+                    TotalCount = catData.TotalItems,
+                    PageIndex = catData.PageNumber,
                     PageSize = catData.PageSize
                 };
                 return this.OkResponse(response, MessageConstant.SuccessGet);
