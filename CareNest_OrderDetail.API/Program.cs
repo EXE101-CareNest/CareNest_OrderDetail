@@ -42,7 +42,11 @@ DatabaseSettings dbSettings = new DatabaseSettings
     Password = config["DB_PASSWORD"] ?? config["DatabaseSettings:Password"],
     Database = config["DB_NAME"] ?? config["DatabaseSettings:Database"]
 };
-dbSettings.Display();
+// Chỉ log cấu hình DB ở Development để tránh lỗi/ồn log trên prod
+if (builder.Environment.IsDevelopment())
+{
+    dbSettings.Display();
+}
 string connectionString = dbSettings.GetConnectionString() + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
 
 
@@ -65,7 +69,10 @@ builder.Services.AddSwaggerGen(c =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 
     //ADD JWT BEARER SECURITY DEFINITION
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
