@@ -30,11 +30,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
-// Lấy DatabaseSettings từ configuration
-DatabaseSettings dbSettings = builder.Configuration.GetSection("DatabaseSettings").Get<DatabaseSettings>()!;
+// Lấy DatabaseSettings ưu tiên từ ENV, fallback sang appsettings
+var config = builder.Configuration;
+DatabaseSettings dbSettings = new DatabaseSettings
+{
+    Ip = config["DB_HOST"] ?? config["DatabaseSettings:Ip"],
+    Port = int.TryParse(config["DB_PORT"], out var port)
+        ? port
+        : (config.GetSection("DatabaseSettings").GetValue<int?>("Port") ?? 5432),
+    User = config["DB_USER"] ?? config["DatabaseSettings:User"],
+    Password = config["DB_PASSWORD"] ?? config["DatabaseSettings:Password"],
+    Database = config["DB_NAME"] ?? config["DatabaseSettings:Database"]
+};
 dbSettings.Display();
-string connectionString = dbSettings?.GetConnectionString()
-                        ?? "Host=localhost;Port=5432;Database=order-detail-dev;Username=exe-carenest-dev;Password=nghi123";
+string connectionString = dbSettings.GetConnectionString() + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
 
 
 // Đăng ký DbContext với PostgreSQL
@@ -230,7 +239,8 @@ builder.Services.AddHttpClient<IAPIService, APIService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+var swaggerEnabled = app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Swagger:Enabled");
+if (swaggerEnabled)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -244,5 +254,16 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Chạy migrate có điều kiện qua ENV RUN_MIGRATIONS=true
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+    var runMigrations = Environment.GetEnvironmentVariable("RUN_MIGRATIONS");
+    if (!string.IsNullOrWhiteSpace(runMigrations) && runMigrations.Equals("true", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Database.Migrate();
+    }
+}
 
 app.Run();
