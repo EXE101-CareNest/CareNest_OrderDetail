@@ -32,32 +32,28 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 // Lấy DatabaseSettings ưu tiên từ ENV, fallback sang appsettings
 var config = builder.Configuration;
-string connectionString;
-try
+var host = config["DB_HOST"] ?? config["DatabaseSettings:Ip"] ?? "localhost";
+var portVal = int.TryParse(config["DB_PORT"], out var parsedPort)
+    ? parsedPort
+    : (config.GetSection("DatabaseSettings").GetValue<int?>("Port") ?? 5432);
+var user = config["DB_USER"] ?? config["DatabaseSettings:User"] ?? "postgres";
+var password = config["DB_PASSWORD"] ?? config["DatabaseSettings:Password"] ?? "postgres";
+var dbName = config["DB_NAME"] ?? config["DatabaseSettings:Database"] ?? "order-detail";
+
+DatabaseSettings dbSettings = new DatabaseSettings
 {
-    DatabaseSettings dbSettings = new DatabaseSettings
-    {
-        Ip = config["DB_HOST"] ?? config["DatabaseSettings:Ip"] ?? "localhost",
-        Port = int.TryParse(config["DB_PORT"], out var port)
-            ? port
-            : (config.GetSection("DatabaseSettings").GetValue<int?>("Port") ?? 5432),
-        User = config["DB_USER"] ?? config["DatabaseSettings:User"] ?? "postgres",
-        Password = config["DB_PASSWORD"] ?? config["DatabaseSettings:Password"] ?? "postgres",
-        Database = config["DB_NAME"] ?? config["DatabaseSettings:Database"] ?? "order-detail"
-    };
-    // Chỉ log cấu hình DB ở Development
-    if (builder.Environment.IsDevelopment())
-    {
-        dbSettings.Display();
-    }
-    connectionString = dbSettings.GetConnectionString() + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
-}
-catch (Exception ex)
+    Ip = host,
+    Port = portVal,
+    User = user,
+    Password = password,
+    Database = dbName
+};
+// Chỉ log cấu hình DB ở Development để tránh lỗi/ồn log trên prod
+if (builder.Environment.IsDevelopment())
 {
-    Console.WriteLine($"[Startup] Lỗi đọc cấu hình DB: {ex.Message}");
-    // Fallback an toàn để dịch vụ vẫn start (có thể lỗi DB sau đó nhưng không crash ngay)
-    connectionString = "Host=localhost;Port=5432;Database=order-detail;Username=postgres;Password=postgres;Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
+    dbSettings.Display();
 }
+string connectionString = dbSettings.GetConnectionString() + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
 
 
 // Đăng ký DbContext với PostgreSQL
