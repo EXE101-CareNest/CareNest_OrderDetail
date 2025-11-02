@@ -244,12 +244,12 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddScoped<IUseCaseDispatcher, UseCaseDispatcher>();
 
-// Options cho APIService generic
+// Options cho APIService generic - ưu tiên ENV, fallback sang config
 builder.Services.Configure<APIServiceOption>(options =>
 {
     var config = builder.Configuration;
-    options.BaseUrlShop = config["ShopApi:BaseUrl"] ?? "http://localhost:8015";
-    options.BaseUrlProduct = config["ProductDetailApi:BaseUrl"] ?? "http://localhost:8016";
+    options.BaseUrlShop = config["SHOP_API_URL"] ?? config["ShopApi:BaseUrl"] ?? "http://localhost:8015";
+    options.BaseUrlProduct = config["PRODUCT_DETAIL_API_URL"] ?? config["ProductDetailApi:BaseUrl"] ?? "http://localhost:8016";
 });
 
 // HttpClient generic
