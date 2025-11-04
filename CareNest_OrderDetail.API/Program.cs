@@ -350,18 +350,18 @@ BEGIN
         WHERE n.nspname='public' AND c.relname='orderdetails'
     ) THEN
         CREATE TABLE public.orderdetails (
-            \"Id\" text NOT NULL,
-            \"ProductDetailId\" text NULL,
-            \"OrderId\" text NULL,
-            \"Quantity\" integer NOT NULL,
-            \"TotalAmount\" double precision NOT NULL,
-            \"CreatedBy\" text NULL,
-            \"UpdatedBy\" text NULL,
-            \"DeletedBy\" text NULL,
-            \"CreatedAt\" timestamp with time zone NULL,
-            \"UpdatedAt\" timestamp with time zone NULL,
-            \"DeleteAt\" timestamp with time zone NULL,
-            CONSTRAINT \"PK_orderdetails\" PRIMARY KEY (\"Id\")
+            ""Id"" text NOT NULL,
+            ""ProductDetailId"" text NULL,
+            ""OrderId"" text NULL,
+            ""Quantity"" integer NOT NULL,
+            ""TotalAmount"" double precision NOT NULL,
+            ""CreatedBy"" text NULL,
+            ""UpdatedBy"" text NULL,
+            ""DeletedBy"" text NULL,
+            ""CreatedAt"" timestamp with time zone NULL,
+            ""UpdatedAt"" timestamp with time zone NULL,
+            ""DeleteAt"" timestamp with time zone NULL,
+            CONSTRAINT ""PK_orderdetails"" PRIMARY KEY (""Id"")
         );
     END IF;
 END $$;";
