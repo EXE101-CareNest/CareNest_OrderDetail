@@ -48,7 +48,12 @@ try
         var portVal = uri.Port > 0 ? uri.Port : 5432;
         var dbName = uri.AbsolutePath.TrimStart('/');
 
-        connectionString = $"Host={host};Port={portVal};Database={dbName};Username={user};Password={password};Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
+        var ssl = Environment.GetEnvironmentVariable("POSTGRES_SSL");
+        var sslPart = (!string.IsNullOrWhiteSpace(ssl) && ssl.Equals("true", StringComparison.OrdinalIgnoreCase))
+            ? "SSL Mode=Require;Trust Server Certificate=true;"
+            : string.Empty;
+
+        connectionString = $"Host={host};Port={portVal};Database={dbName};Username={user};Password={password};{sslPart}Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
     }
     else
     {
@@ -73,7 +78,12 @@ try
         {
             dbSettings.Display();
         }
-        connectionString = dbSettings.GetConnectionString() + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
+        var ssl = Environment.GetEnvironmentVariable("POSTGRES_SSL");
+        var sslPart = (!string.IsNullOrWhiteSpace(ssl) && ssl.Equals("true", StringComparison.OrdinalIgnoreCase))
+            ? "SSL Mode=Require;Trust Server Certificate=true;"
+            : string.Empty;
+
+        connectionString = dbSettings.GetConnectionString() + $";{sslPart}Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
     }
 }
 catch (Exception ex)
@@ -298,14 +308,24 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Chạy migrate có điều kiện qua ENV RUN_MIGRATIONS=true
+// Chạy migrate có điều kiện qua ENV RUN_MIGRATIONS=true, có log và bắt lỗi rõ ràng
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
     var runMigrations = Environment.GetEnvironmentVariable("RUN_MIGRATIONS");
     if (!string.IsNullOrWhiteSpace(runMigrations) && runMigrations.Equals("true", StringComparison.OrdinalIgnoreCase))
     {
-        context.Database.Migrate();
+        try
+        {
+            Console.WriteLine("[Startup] Applying EF Core migrations...");
+            context.Database.Migrate();
+            Console.WriteLine("[Startup] EF Core migrations completed successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Startup] EF Core migration failed: {ex.Message}");
+            throw;
+        }
     }
 }
 
