@@ -4,6 +4,7 @@ using CareNest_OrderDetail.Application.Interfaces.Services;
 using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CareNest_OrderDetail.Infrastructure.Services
 {
@@ -32,7 +33,9 @@ namespace CareNest_OrderDetail.Infrastructure.Services
                 {
                     var apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(content, new JsonSerializerOptions
                     {
-                        PropertyNameCaseInsensitive = true
+                        PropertyNameCaseInsensitive = true,
+                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                        Converters = { new FlexibleNullableDoubleConverter() }
                     });
 
                     if (apiResponse?.Success == true)
@@ -62,7 +65,10 @@ namespace CareNest_OrderDetail.Infrastructure.Services
                 var baseUrl = GetBaseUrl(serviceType);
                 var fullUrl = $"{baseUrl}{endpoint}";
 
-                var json = JsonSerializer.Serialize(data);
+                var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+                {
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync(fullUrl, content);
@@ -72,7 +78,9 @@ namespace CareNest_OrderDetail.Infrastructure.Services
                 {
                     var apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(responseContent, new JsonSerializerOptions
                     {
-                        PropertyNameCaseInsensitive = true
+                        PropertyNameCaseInsensitive = true,
+                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                        Converters = { new FlexibleNullableDoubleConverter() }
                     });
 
                     if (apiResponse?.Success == true)
@@ -102,7 +110,10 @@ namespace CareNest_OrderDetail.Infrastructure.Services
                 var baseUrl = GetBaseUrl(serviceType);
                 var fullUrl = $"{baseUrl}{endpoint}";
 
-                var json = JsonSerializer.Serialize(data);
+                var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+                {
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PutAsync(fullUrl, content);
@@ -112,7 +123,9 @@ namespace CareNest_OrderDetail.Infrastructure.Services
                 {
                     var apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(responseContent, new JsonSerializerOptions
                     {
-                        PropertyNameCaseInsensitive = true
+                        PropertyNameCaseInsensitive = true,
+                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                        Converters = { new FlexibleNullableDoubleConverter() }
                     });
 
                     if (apiResponse?.Success == true)
@@ -149,7 +162,9 @@ namespace CareNest_OrderDetail.Infrastructure.Services
                 {
                     var apiResponse = JsonSerializer.Deserialize<ApiResponse<T>>(content, new JsonSerializerOptions
                     {
-                        PropertyNameCaseInsensitive = true
+                        PropertyNameCaseInsensitive = true,
+                        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+                        Converters = { new FlexibleNullableDoubleConverter() }
                     });
 
                     if (apiResponse?.Success == true)

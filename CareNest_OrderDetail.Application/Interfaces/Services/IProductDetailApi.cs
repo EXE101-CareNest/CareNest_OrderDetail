@@ -10,7 +10,7 @@ namespace CareNest_OrderDetail.Application.Interfaces.Services
         public string? Name { get; set; }
         public double Price { get; set; }
         public bool Status { get; set; }
-        public double Discount { get; set; }
+        public double? Discount { get; set; }
         public bool IsDefault { get; set; }
         public string? ImgUrls { get; set; }
         public int QuantityInStock { get; set; }
@@ -25,7 +25,7 @@ namespace CareNest_OrderDetail.Application.Interfaces.Services
         public string? Name { get; set; }
         public double Price { get; set; }
         public bool Status { get; set; }
-        public double Discount { get; set; }
+        public double? Discount { get; set; }
         public bool IsDefault { get; set; }
         public string? ImgUrls { get; set; }
         public int QuantityInStock { get; set; }
