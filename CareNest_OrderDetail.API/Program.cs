@@ -30,32 +30,51 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
-// Lấy DatabaseSettings ưu tiên từ ENV, fallback sang appsettings, có try/catch an toàn
+// Lấy DatabaseSettings ưu tiên từ ENV (DATABASE_URL), fallback sang DB_* hoặc appsettings, có try/catch an toàn
 string connectionString;
 try
 {
     var config = builder.Configuration;
-    var host = config["DB_HOST"] ?? config["DatabaseSettings:Ip"] ?? "localhost";
-    var portVal = int.TryParse(config["DB_PORT"], out var parsedPort)
-        ? parsedPort
-        : (config.GetSection("DatabaseSettings").GetValue<int?>("Port") ?? 5432);
-    var user = config["DB_USER"] ?? config["DatabaseSettings:User"] ?? "postgres";
-    var password = config["DB_PASSWORD"] ?? config["DatabaseSettings:Password"] ?? "postgres";
-    var dbName = config["DB_NAME"] ?? config["DatabaseSettings:Database"] ?? "order-detail";
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL") ?? config["DATABASE_URL"];
 
-    DatabaseSettings dbSettings = new DatabaseSettings
+    if (!string.IsNullOrWhiteSpace(databaseUrl))
     {
-        Ip = host,
-        Port = portVal,
-        User = user,
-        Password = password,
-        Database = dbName
-    };
-    if (builder.Environment.IsDevelopment())
-    {
-        dbSettings.Display();
+        // Parse postgres://user:password@host:port/dbname
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':', 2);
+        var user = userInfo.Length > 0 ? userInfo[0] : "postgres";
+        var password = userInfo.Length > 1 ? userInfo[1] : "postgres";
+        var host = uri.Host;
+        var portVal = uri.Port > 0 ? uri.Port : 5432;
+        var dbName = uri.AbsolutePath.TrimStart('/');
+
+        connectionString = $"Host={host};Port={portVal};Database={dbName};Username={user};Password={password};Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
     }
-    connectionString = dbSettings.GetConnectionString() + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
+    else
+    {
+        // Fallback: đọc từ DB_* hoặc appsettings
+        var host = config["DB_HOST"] ?? config["DatabaseSettings:Ip"] ?? "localhost";
+        var portVal = int.TryParse(config["DB_PORT"], out var parsedPort)
+            ? parsedPort
+            : (config.GetSection("DatabaseSettings").GetValue<int?>("Port") ?? 5432);
+        var user = config["DB_USER"] ?? config["DatabaseSettings:User"] ?? "postgres";
+        var password = config["DB_PASSWORD"] ?? config["DatabaseSettings:Password"] ?? "postgres";
+        var dbName = config["DB_NAME"] ?? config["DatabaseSettings:Database"] ?? "order-detail";
+
+        DatabaseSettings dbSettings = new DatabaseSettings
+        {
+            Ip = host,
+            Port = portVal,
+            User = user,
+            Password = password,
+            Database = dbName
+        };
+        if (builder.Environment.IsDevelopment())
+        {
+            dbSettings.Display();
+        }
+        connectionString = dbSettings.GetConnectionString() + ";Pooling=true;Maximum Pool Size=5;Minimum Pool Size=0;Timeout=15;";
+    }
 }
 catch (Exception ex)
 {
