@@ -101,6 +101,8 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(5),
             errorCodesToAdd: null);
+        // Chỉ định assembly chứa EF Core migrations
+        npgsqlOptions.MigrationsAssembly("CareNest_OrderDetail.Infrastructure");
     }));
 
 builder.Services.AddTransient<DatabaseSeeder>();
