@@ -320,8 +320,20 @@ using (var scope = app.Services.CreateScope())
         try
         {
             Console.WriteLine("[Startup] Applying EF Core migrations...");
+            var pending = context.Database.GetPendingMigrations().ToList();
+            Console.WriteLine($"[Startup] Pending migrations: {(pending.Count == 0 ? "<none>" : string.Join(", ", pending))}");
             context.Database.Migrate();
             Console.WriteLine("[Startup] EF Core migrations completed successfully.");
+
+            // Nếu hoàn toàn không có migration nào (trường hợp build thiếu migrations), fallback EnsureCreated
+            var allMigrations = context.Database.GetMigrations().ToList();
+            var applied = context.Database.GetAppliedMigrations().ToList();
+            if (allMigrations.Count == 0 && applied.Count == 0)
+            {
+                Console.WriteLine("[Startup] No migrations found. Running EnsureCreated() as fallback...");
+                context.Database.EnsureCreated();
+                Console.WriteLine("[Startup] EnsureCreated completed.");
+            }
         }
         catch (Exception ex)
         {
