@@ -279,7 +279,10 @@ builder.Services.AddHttpClient<IAPIService, APIService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-var swaggerEnabled = app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Swagger:Enabled");
+var swaggerEnv = Environment.GetEnvironmentVariable("SWAGGER_ENABLED");
+var swaggerEnabled = app.Environment.IsDevelopment()
+    || builder.Configuration.GetValue<bool>("Swagger:Enabled")
+    || (!string.IsNullOrWhiteSpace(swaggerEnv) && swaggerEnv.Equals("true", StringComparison.OrdinalIgnoreCase));
 if (swaggerEnabled)
 {
     app.UseSwagger();
