@@ -302,7 +302,12 @@ if (swaggerEnabled)
 }
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
-app.UseHttpsRedirection();
+// Ở môi trường Koyeb (đứng sau proxy), có thể không xác định được HTTPS port
+// Chỉ bật redirect HTTPS ở Development; Production để proxy xử lý TLS
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors(MyAllowSpecificOrigins);
 
@@ -334,6 +339,34 @@ using (var scope = app.Services.CreateScope())
                 context.Database.EnsureCreated();
                 Console.WriteLine("[Startup] EnsureCreated completed.");
             }
+
+            // Đảm bảo bảng orderdetails tồn tại (tránh lệch tên hoa/thường giữa migration và model)
+            Console.WriteLine("[Startup] Verifying table 'orderdetails' exists...");
+            var ensureSql = @"DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relname='orderdetails'
+    ) THEN
+        CREATE TABLE public.orderdetails (
+            \"Id\" text NOT NULL,
+            \"ProductDetailId\" text NULL,
+            \"OrderId\" text NULL,
+            \"Quantity\" integer NOT NULL,
+            \"TotalAmount\" double precision NOT NULL,
+            \"CreatedBy\" text NULL,
+            \"UpdatedBy\" text NULL,
+            \"DeletedBy\" text NULL,
+            \"CreatedAt\" timestamp with time zone NULL,
+            \"UpdatedAt\" timestamp with time zone NULL,
+            \"DeleteAt\" timestamp with time zone NULL,
+            CONSTRAINT \"PK_orderdetails\" PRIMARY KEY (\"Id\")
+        );
+    END IF;
+END $$;";
+            context.Database.ExecuteSqlRaw(ensureSql);
+            Console.WriteLine("[Startup] Table 'orderdetails' verification completed.");
         }
         catch (Exception ex)
         {
