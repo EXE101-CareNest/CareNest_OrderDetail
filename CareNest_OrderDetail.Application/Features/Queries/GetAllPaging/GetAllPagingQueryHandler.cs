@@ -1,6 +1,7 @@
 ﻿using CareNest_OrderDetail.Application.Common;
 using CareNest_OrderDetail.Application.Interfaces.CQRS.Queries;
 using CareNest_OrderDetail.Application.Interfaces.UOW;
+using CareNest_OrderDetail.Application.Interfaces.Services;
 using CareNest_OrderDetail.Domain.Entitites;
 
 namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
@@ -8,10 +9,12 @@ namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
     public class GetAllPagingQueryHandler : IQueryHandler<GetAllPagingQuery, PageResult<OrderDetailResponse>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAPIService _apiService;
 
-        public GetAllPagingQueryHandler(IUnitOfWork unitOfWork)
+        public GetAllPagingQueryHandler(IUnitOfWork unitOfWork, IAPIService apiService)
         {
             _unitOfWork = unitOfWork;
+            _apiService = apiService;
         }
 
         public async Task<PageResult<OrderDetailResponse>> HandleAsync(GetAllPagingQuery query)
@@ -43,7 +46,33 @@ namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
                 pageSize: query.PageSize,
                 pageIndex: query.Index);
 
-            return new PageResult<OrderDetailResponse>(items, totalItems, query.Index, query.PageSize);
+            // Bổ sung tên ProductDetail cho từng item
+            var itemList = items.ToList();
+            var productDetailIds = itemList
+                .Select(x => x.ProductDetailId)
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct()
+                .ToList();
+
+            var nameByProductDetailId = new Dictionary<string, string?>();
+            foreach (var pid in productDetailIds)
+            {
+                var res = await _apiService.GetAsync<ProductDetailDto>("product", $"/api/ProductDetails/{pid}");
+                if (res.IsSuccess && res.Data != null)
+                {
+                    nameByProductDetailId[pid!] = res.Data.Name;
+                }
+            }
+
+            foreach (var it in itemList)
+            {
+                if (!string.IsNullOrWhiteSpace(it.ProductDetailId) && nameByProductDetailId.TryGetValue(it.ProductDetailId!, out var name))
+                {
+                    it.Name = name;
+                }
+            }
+
+            return new PageResult<OrderDetailResponse>(itemList, totalItems, query.Index, query.PageSize);
         }
 
 

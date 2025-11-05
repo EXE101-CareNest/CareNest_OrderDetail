@@ -22,5 +22,9 @@
         /// tổng tiền đơn hàng
         /// </summary>
         public double TotalAmount { get; set; }
+        /// <summary>
+        /// Tên chi tiết sản phẩm
+        /// </summary>
+        public string? Name { get; set; }
     }
 }
