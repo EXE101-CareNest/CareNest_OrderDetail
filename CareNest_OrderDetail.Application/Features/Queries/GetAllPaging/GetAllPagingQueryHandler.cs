@@ -66,9 +66,15 @@ namespace CareNest_OrderDetail.Application.Features.Queries.GetAllPaging
 
             foreach (var it in itemList)
             {
+                // Mặc định gán chuỗi rỗng để đảm bảo field xuất hiện trong JSON
+                if (it.Name == null)
+                {
+                    it.Name = string.Empty;
+                }
+
                 if (!string.IsNullOrWhiteSpace(it.ProductDetailId) && nameByProductDetailId.TryGetValue(it.ProductDetailId!, out var name))
                 {
-                    it.Name = name;
+                    it.Name = name ?? string.Empty;
                 }
             }
 
